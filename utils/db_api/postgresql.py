@@ -52,6 +52,18 @@ class Database:
         """
         await self.execute(sql, execute=True)
 
+    async def create_table_tests(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Tests (
+        id SERIAL PRIMARY KEY, 
+        test_count INT NOT NULL,
+        answers VARCHAR(255) NOT NULL,
+        created_user INT REFERENCES Users(telegram_id) ON DELETE CASCADE ON UPDATE CASCADE,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() 
+        )
+        """
+        await self.execute(sql, execute=True)
+
     @staticmethod
     def format_args(sql, parameters: dict):
         sql += " AND ".join([
@@ -60,9 +72,22 @@ class Database:
         ])
         return sql, tuple(parameters.values())
 
+    # users
     async def add_user(self, full_name, username, telegram_id, phone_number, created_at):
-        sql = "INSERT INTO users (full_name, username, telegram_id, phone_number, created_at) VALUES($1, $2, $3, $4, $5) returning *"
+        sql = "INSERT INTO Users (full_name, username, telegram_id, phone_number, created_at) VALUES($1, $2, $3, $4, $5) returning *"
         return await self.execute(sql, full_name, username, telegram_id, phone_number, created_at, fetchrow=True)
+
+    # tests
+    async def add_test(self, test_count, answers, created_user, created_at):
+        sql = "INSERT INTO Tests (test_count, answers, created_user, created_at) VALUES($1, $2, $3, $4) returning *"
+        test = await self.execute(sql, test_count, answers, created_user, created_at, fetchrow=True)
+        return {
+            "id": test[0],
+            "test_count": test[1],
+            "answers": test[2],
+            "created_user": test[3],
+            "created_at": test[4]
+        }
 
     async def select_all_users(self):
         sql = "SELECT * FROM Users"

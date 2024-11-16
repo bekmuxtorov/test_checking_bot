@@ -3,13 +3,13 @@ import asyncio
 from aiogram import types
 
 from data.config import ADMINS
+from keyboards.inline import admin_inline_buttons
 from loader import dp, db, bot
 
-@dp.message_handler(text="/reklama", user_id=ADMINS)
+
+@dp.message_handler(text="/admin", user_id=ADMINS)
 async def send_ad_to_all(message: types.Message):
-    users = await db.select_all_users()
-    for user in users:
-        # print(user[3])
-        user_id = user[3]
-        await bot.send_message(chat_id=user_id, text="@SariqDev kanaliga obuna bo'ling!")
-        await asyncio.sleep(0.05)
+    await message.answer(
+        text="Siz bot administatorisiz, kerakli bo'limni tanlang:",
+        reply_markup=admin_inline_buttons
+    )
