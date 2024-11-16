@@ -10,6 +10,7 @@ from utils import get_now
 @dp.callback_query_handler(lambda c: c.data == 'add_test')
 async def register_callback(call: types.CallbackQuery):
     await call.message.answer("Savollar sonini kiriting:")
+    await call.message.delete()
     await AddTest.Count.set()
 
 
@@ -54,23 +55,28 @@ async def process_answers(message: types.Message, state: FSMContext):
     await AddTest.Answers.set()
 
 
-@dp.callback_query_handler(lambda c: c.data == 'yes', state=AddTest.Confirm)
-async def process_yes(message: types.Message, state: FSMContext):
+@dp.callback_query_handler(text="yes", state=AddTest.Confirm)
+async def process_yes(call: types.CallbackQuery, state: FSMContext):
+    print("men shetta")
+    await call.message.delete()
     data = await state.get_data()
     test = await db.add_test(
         test_count=data.get("test_count"),
         answers=data.get("answers"),
-        created_user=message.from_user.id,
+        created_user=call.from_user.id,
         created_at=await get_now()
     )
-    await message.answer("Test muaffaqiyatli qo'shildi!")
-    # get_full_name =
-    await message.answer(
-        f"""Test kodi: <copy>{test.get("id")} < /copy >\nSavollar soni: {test.get("test_count")}\nTuzuvchi: {test.get("created_user")}\nSana: {test.get("created_at")}\nJavoblar: {test.get("answers")}""")
+    user = await db.select_user(telegram_id=test.get('created_user'))
+    print(await get_now())
+    await call.message.answer(
+        f"Test kodi: <code>{test.get('id')} </code>\nSavollar soni: {test.get('test_count')}\nTuzuvchi: {user.get('full_name')}\nSana: {test.get('created_at').strftime('%d/%m/%Y')}\nJavoblar: {test.get('answers')}"
+    )
+    await call.message.answer(text="Test muaffaqiyatli qo'shildi!")
     await state.finish()
 
 
-@dp.callback_query_handler(lambda c: c.data == 'no', state=AddTest.Confirm)
-async def process_no(message: types.Message, state: FSMContext):
-    await message.answer("Bekor qilindi, qayta urinib ko'rishingiz mumkin.", reply_markup=admin_inline_buttons)
+@dp.callback_query_handler(text="no", state=AddTest.Confirm)
+async def process_no(call: types.CallbackQuery, state: FSMContext):
+    await call.message.delete()
+    await call.message.answer("Bekor qilindi, qayta urinib ko'rishingiz mumkin.", reply_markup=admin_inline_buttons)
     await state.finish()

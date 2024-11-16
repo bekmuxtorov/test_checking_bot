@@ -2,17 +2,21 @@ from loader import dp, db
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
+from data.config import ADMINS
+
 from states.registration import Registration
 from keyboards.default.default_buttons import phone_button
+from keyboards.inline.inline_buttons import admin_inline_buttons
 
 from utils import get_now
 
 import re
 
 
-@dp.callback_query_handler(lambda c: c.data == 'register')
+@dp.callback_query_handler(text="register")
 async def register_callback(call: types.CallbackQuery):
     print("men shetta")
+    await call.message.delete()
     await call.message.answer("Iltimos, ismingiz va familiyangizni kiriting:")
     await Registration.full_name.set()
 
@@ -48,6 +52,7 @@ async def process_phone_number(message: types.Message, state: FSMContext):
     pattern = r"^\+998\d{9}$"
     if re.match(pattern, contact):
         await state.update_data(phone_number=contact)
+        await save_user_data(message, state)
     else:
         await message.answer("Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
         await Registration.phone_number.set()
@@ -69,6 +74,12 @@ async def save_user_data(message: types.Message, state: FSMContext):
             phone_number=data.get("phone_number"),
             created_at=await get_now(),
         )
-        await message.answer("Muvaffaqiyatli ro'yxatdan o'tdingiz! Botdan foydalanishingiz mumkin.")
+        text = "Muvaffaqiyatli ro'yxatdan o'tdingiz! Botdan foydalanishingiz mumkin."
+        if message.from_user.id in ADMINS:
+            await message.answer(text, reply_markup=admin_inline_buttons)
+        else:
+            await message.answer(text + "\n\n Javoblarni namuna bo'yicha jo'natishingiz mumkin: \n\n<i>Namuna:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>")
     except:
         await message.answer("Ro'yxatdan o'tish muaffaqiyatli tugatilmadi! Iltimos qayta urinib ko'ring.")
+
+    await state.finish()

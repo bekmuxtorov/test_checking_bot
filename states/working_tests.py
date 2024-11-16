@@ -6,3 +6,8 @@ class AddTest(StatesGroup):
     Count = State()
     Answers = State()
     Confirm = State()
+
+
+class CheckTest(StatesGroup):
+    Config = State()
+    

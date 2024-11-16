@@ -23,3 +23,13 @@ admin_inline_buttons = make_inline_buttons(
     words=buttons,
     row_width=2
 )
+
+for_yesno_button = {
+    "Ha": "yes",
+    "Yo'q": "no"
+}
+
+yesno_button = make_inline_buttons(
+    words=for_yesno_button,
+    row_width=2
+)
