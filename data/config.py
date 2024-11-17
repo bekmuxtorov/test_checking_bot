@@ -8,6 +8,7 @@ env.read_env()
 BOT_TOKEN = env.str("BOT_TOKEN")  # Bot toekn
 ADMINS = env.list("ADMINS")  # adminlar ro'yxati
 IP = env.str("ip")  # Xosting ip manzili
+CHANNELS = env.list("CHANNELS")
 
 DB_USER = env.str("DB_USER")
 DB_PASS = env.str("DB_PASS")

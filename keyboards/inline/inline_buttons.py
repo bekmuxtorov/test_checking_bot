@@ -1,6 +1,19 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
+def become_member_buttons(must_member: dict):
+    become_member = InlineKeyboardMarkup(row_width=1)
+    for channel, title in must_member.items():
+        channel_link = f'https://{channel}.t.me'
+        button = InlineKeyboardButton(text=title, url=f"{channel_link}")
+        become_member.insert(button)
+
+    check_button = InlineKeyboardButton(
+        text='🔔 Obuna bo\'ldim', callback_data="check_button")
+    become_member.insert(check_button)
+    return become_member
+
+
 def make_inline_buttons(words: dict, row_width: int = 1) -> InlineKeyboardMarkup:
     buttons_group = InlineKeyboardMarkup(row_width=row_width)
     for text, callback_data in words.items():

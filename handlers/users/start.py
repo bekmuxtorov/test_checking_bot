@@ -44,3 +44,21 @@ async def bot_start(message: types.Message, state: FSMContext):
             text="Assalomu alaykum ustoz!\n\nTest tekshiruvchi botga xush kelibsiz!\nQuyidagi tugma yordamida botdan ro'yhatdan o'ting va botning barcha imkoniyatlaridan bepulga foydalaning.",
             reply_markup=register_button
         )
+
+
+@dp.callback_query_handler(text_contains="check_button")
+async def is_member(call: types.CallbackQuery,):
+    user_id = call.from_user.id
+    await call.message.delete()
+    if call.message.chat.type in (types.ChatType.SUPERGROUP, types.ChatType.GROUP):
+        await call.message.answer("💡 Guruhdan foydalanishingiz mumkin!")
+        return
+    user = await db.select_user(telegram_id=user_id)
+    if user:
+        await call.message.answer(
+            "Javoblarni namuna bo'yicha jo'natishingiz mumkin: \n\n<i>Namuna:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>")
+    else:
+        await call.message.answer(
+            text="Assalomu alaykum ustoz!\n\nTest tekshiruvchi botga xush kelibsiz!\nQuyidagi tugma yordamida botdan ro'yhatdan o'ting va botning barcha imkoniyatlaridan bepulga foydalaning.",
+            reply_markup=register_button
+        )

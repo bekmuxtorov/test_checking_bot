@@ -19,6 +19,11 @@ async def process_checking_test(message: types.Message, state: FSMContext):
         user_answers = answers_part[1]
 
         test = await db.select_test(id=test_code)
+        if not test:
+            await message.answer("Mavjud bo'lmagan test kodi kiritildi, iltimos tekshirib qayta urinib ko'ring!")
+            await state.finish()
+            return
+
         test_count = test.get("test_count")
         answers = test.get("answers")
 
