@@ -20,7 +20,7 @@ async def process_checking_test(message: types.Message, state: FSMContext):
 
         test = await db.select_test(id=test_code)
         if not test:
-            await message.answer("Mavjud bo'lmagan test kodi kiritildi, iltimos tekshirib qayta urinib ko'ring!")
+            await message.answer("‼️Mavjud bo'lmagan test kodi kiritildi, iltimos tekshirib qayta urinib ko'ring!")
             await state.finish()
             return
 
@@ -29,7 +29,7 @@ async def process_checking_test(message: types.Message, state: FSMContext):
 
         if test_count != len(user_answers):
             await message.answer(
-                text=f"Javoblar to'liq kiritilmadi, savollar soni {test_count} ta, to'ldirib qayta yuboring!"
+                text=f"‼️Javoblar to'liq kiritilmadi, savollar soni {test_count} ta, to'ldirib qayta yuboring!"
             )
             return
 
@@ -69,7 +69,7 @@ async def process_yes(call: types.CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(text="no", state=CheckTest.Config)
 async def process_yes(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await call.message.answer("Yaxshi, kerakli paytda xizmatingizdaman!")
+    await call.message.answer("⚡️Yaxshi, kerakli paytda xizmatingizdaman!")
     await state.finish()
 
 
@@ -84,7 +84,7 @@ async def checking_test(test_code: int, user_answers: str, answers: str):
 async def view_test_with_number(test_code: int, user_answers: str, status_answer: dict = None):
     message = ''
 
-    message += f"Test kodi: <code>{test_code}</code>\n"
+    message += f"📝Test kodi: <code>{test_code}</code>\n"
     count = len(user_answers)
     half_count = int(count/2)
     if not status_answer:
@@ -92,16 +92,18 @@ async def view_test_with_number(test_code: int, user_answers: str, status_answer
             message += f"\n{i+1}. {user_answers[i]}         {half_count+i+1}. {user_answers[half_count+i]}"
         if half_count*2 != count:
             message += f"\n{count}. {user_answers[count-1]}"
-        message += "\n\nTasdiqlaysizmi?"
+        message += "\n\n💡Tasdiqlaysizmi?"
         return message
     else:
         test = await db.select_test(id=test_code)
         user = await db.select_user(telegram_id=test.get('created_user'))
         true_count = sum(1 for value in status_answer.values() if value == "✅")
-        message += f"Tuzuvchi: {user.get('full_name')}\n"
-        message += f"Savollar soni: {test.get('test_count')} ta\n"
-        message += f"To'g'ri javoblar soni: {true_count} ta\n"
-        message += f"Noto'g'ri javoblar soni: {count-true_count} ta\n"
+        persent_true_count = round(
+            true_count*100/int(test.get('test_count')), 2)
+        message += f"👤Tuzuvchi: {user.get('full_name')}\n"
+        message += f"📋Savollar soni: {test.get('test_count')} ta\n\n"
+        message += f"📊To'g'ri javoblar soni: {true_count} ({persent_true_count}%)\n"
+        message += f"🧮Noto'g'ri javoblar soni: {count-true_count} ({round(100-persent_true_count, 2)}%)\n"
 
         for i in range(half_count):
             message += f"\n{i+1}. {user_answers[i]} {status_answer.get(f'{i+1}')}         {half_count+i+1}. {user_answers[half_count+i]} {status_answer.get(f'{half_count+i+1}')}"

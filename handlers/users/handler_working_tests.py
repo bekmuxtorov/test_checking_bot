@@ -9,7 +9,7 @@ from utils import get_now
 
 @dp.callback_query_handler(lambda c: c.data == 'add_test')
 async def register_callback(call: types.CallbackQuery):
-    await call.message.answer("Savollar sonini kiriting:")
+    await call.message.answer("📋Savollar sonini kiriting:")
     await call.message.delete()
     await AddTest.Count.set()
 
@@ -19,10 +19,10 @@ async def process_test_count(message: types.Message, state: FSMContext):
     test_count = message.text
     if test_count.isnumeric():
         await state.update_data(test_count=int(test_count))
-        await message.answer("Javoblarni ketma-ketlikda kiriting. \n\n<i>Namuna: abcababbcaabccaaabbba</i>")
+        await message.answer("📝Javoblarni ketma-ketlikda kiriting. \n\n<i>Namuna: abcababbcaabccaaabbba</i>")
         await AddTest.Answers.set()
     else:
-        await message.answer("Iltimos test savollar sonini kiriting: ")
+        await message.answer("📋Iltimos test savollar sonini kiriting: ")
         await AddTest.Count.set()
 
 
@@ -33,7 +33,7 @@ async def process_answers(message: types.Message, state: FSMContext):
     test_count = data.get("test_count")
     if len(answers) != test_count:
         await message.answer(
-            f"Iltimos test javoblarni to'liq kiriting! \n\nSavollar soni {test_count} ta, lekin kiritilgan javoblar soni {len(answers)} ta"
+            f"‼️Iltimos test javoblarni to'liq kiriting! \n\nSavollar soni {test_count} ta, lekin kiritilgan javoblar soni {len(answers)} ta"
         )
         await AddTest.Answers.set()
     else:
@@ -42,7 +42,7 @@ async def process_answers(message: types.Message, state: FSMContext):
             "Yo'q": "no"
         }
         await message.answer(
-            f"Savollar soni: {test_count} ta\nJavoblar: {answers}\nTuzuvchi: {message.from_user.first_name}\n\nTasdiqlaysizmi?",
+            f"📋Savollar soni: {test_count} ta\n📊Javoblar: {answers}\n👤Tuzuvchi: {message.from_user.first_name}\n\n💡Tasdiqlaysizmi?",
             reply_markup=make_inline_buttons(buttons, row_width=2)
         )
         await state.update_data(answers=answers)
@@ -51,7 +51,7 @@ async def process_answers(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AddTest.Count)
 async def process_answers(message: types.Message, state: FSMContext):
-    await message.answer("Iltimos test javoblarini ketma-ketlikda kiriting.\n\n\n\n<i>Namuna: abcababbcaabccaaabbba</i>")
+    await message.answer("‼️Iltimos test javoblarini ketma-ketlikda kiriting.\n\n\n\n<i>Namuna: abcababbcaabccaaabbba</i>")
     await AddTest.Answers.set()
 
 
@@ -69,14 +69,14 @@ async def process_yes(call: types.CallbackQuery, state: FSMContext):
     user = await db.select_user(telegram_id=test.get('created_user'))
     print(await get_now())
     await call.message.answer(
-        f"Test kodi: <code>{test.get('id')} </code>\nSavollar soni: {test.get('test_count')}\nTuzuvchi: {user.get('full_name')}\nSana: {test.get('created_at').strftime('%d/%m/%Y')}\nJavoblar: {test.get('answers')}"
+        f"📝Test kodi: <code>{test.get('id')} </code>\n📋Savollar soni: {test.get('test_count')}\n👤Tuzuvchi: {user.get('full_name')}\n📅Sana: {test.get('created_at').strftime('%d/%m/%Y')}\n📊Javoblar: {test.get('answers')}"
     )
-    await call.message.answer(text="Test muaffaqiyatli qo'shildi!")
+    await call.message.answer(text="✅Test muaffaqiyatli qo'shildi!")
     await state.finish()
 
 
 @dp.callback_query_handler(text="no", state=AddTest.Confirm)
 async def process_no(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
-    await call.message.answer("Bekor qilindi, qayta urinib ko'rishingiz mumkin.", reply_markup=admin_inline_buttons)
+    await call.message.answer("‼️Bekor qilindi, qayta urinib ko'rishingiz mumkin.", reply_markup=admin_inline_buttons)
     await state.finish()

@@ -17,7 +17,7 @@ import re
 async def register_callback(call: types.CallbackQuery):
     print("men shetta")
     await call.message.delete()
-    await call.message.answer("Iltimos, ismingiz va familiyangizni kiriting:")
+    await call.message.answer("👤Iltimos, ismingiz va familiyangizni kiriting:")
     await Registration.full_name.set()
 
 
@@ -25,17 +25,17 @@ async def register_callback(call: types.CallbackQuery):
 async def process_full_name(message: types.Message, state: FSMContext):
     message_text = message.text
     if "/start" in message_text or len(message_text.split()) < 2 or not message_text.replace(" ", "").isalpha():
-        await message.answer("Iltimos ism familiyangizni to'liq kiriting!")
+        await message.answer("‼️Iltimos ism familiyangizni to'liq kiriting!")
         await Registration.full_name.set()
     else:
         await state.update_data(full_name=message.text)
-        await message.answer("Telefon raqamingizni +998901644101 ko'rinishda kiriting yoki quyidagi tugma yordamida raqamingizni ulashing:", reply_markup=phone_button)
+        await message.answer("☎️Telefon raqamingizni +998901644101 ko'rinishda kiriting yoki quyidagi tugma yordamida raqamingizni ulashing:", reply_markup=phone_button)
         await Registration.phone_number.set()
 
 
 @dp.message_handler(state=Registration.full_name)
 async def process_full_name(message: types.Message, state: FSMContext):
-    await message.answer("Iltimos ism familiyangizni kiriting!")
+    await message.answer("👤Iltimos ism familiyangizni kiriting!")
     await Registration.full_name.set()
 
 
@@ -54,13 +54,13 @@ async def process_phone_number(message: types.Message, state: FSMContext):
         await state.update_data(phone_number=contact)
         await save_user_data(message, state)
     else:
-        await message.answer("Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
+        await message.answer("‼️Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
         await Registration.phone_number.set()
 
 
 @dp.message_handler(state=Registration.phone_number)
 async def process_phone_number(message: types.Message, state: FSMContext):
-    await message.answer("Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
+    await message.answer("‼️Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
     await Registration.phone_number.set()
 
 
@@ -74,12 +74,12 @@ async def save_user_data(message: types.Message, state: FSMContext):
             phone_number=data.get("phone_number"),
             created_at=await get_now(),
         )
-        text = "Muvaffaqiyatli ro'yxatdan o'tdingiz! Botdan foydalanishingiz mumkin."
+        text = "✅Muvaffaqiyatli ro'yxatdan o'tdingiz! Botdan foydalanishingiz mumkin."
         if message.from_user.id in ADMINS:
             await message.answer(text, reply_markup=admin_inline_buttons)
         else:
-            await message.answer(text + "\n\n Javoblarni namuna bo'yicha jo'natishingiz mumkin: \n\n<i>Namuna:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>")
+            await message.answer(text + "\n\n❗️Testga javob berish\n\n✅Test kodini kiritib # (panjara) belgisini qo'yasiz va barcha kalitlarni kiritasiz.\n\n<i>✍️Misol uchun:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>\n\n✅Katta(A) va kichik(a) harflar bir xil hisoblanadi.")
     except:
-        await message.answer("Ro'yxatdan o'tish muaffaqiyatli tugatilmadi! Iltimos qayta urinib ko'ring.")
+        await message.answer("‼️Ro'yxatdan o'tish muaffaqiyatli tugatilmadi! Iltimos qayta urinib ko'ring.")
 
     await state.finish()
