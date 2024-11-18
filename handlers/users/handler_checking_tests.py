@@ -110,11 +110,3 @@ async def view_test_with_number(test_code: int, user_answers: str, status_answer
         if half_count*2 != count:
             message += f"\n{count}. {user_answers[count-1]} {status_answer.get(f'{count-1}')}"
         return message
-
-
-async def define_true_answer_count(status_answer: dict):
-    true_count = 0
-    for key, value in status_answer.items():
-        if value == "✅":
-            true_count += 1
-    return true_count
