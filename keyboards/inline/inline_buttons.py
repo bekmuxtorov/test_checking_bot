@@ -28,6 +28,7 @@ register_button = InlineKeyboardMarkup().add(
 )
 
 buttons = {
+    "Bo'lim qo'shish": "add_departmant",
     "Test qo'shish": "add_test",
     "Natijalar": "results",
     "Foydalanuvchilar": "users"
@@ -45,4 +46,12 @@ for_yesno_button = {
 yesno_button = make_inline_buttons(
     words=for_yesno_button,
     row_width=2
+)
+
+for_working_test = {
+    "💡Test ishlash": "work_test"
+}
+working_test_button = make_inline_buttons(
+    words=for_working_test,
+    row_width=1
 )

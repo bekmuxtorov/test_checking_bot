@@ -6,7 +6,7 @@ from aiogram.dispatcher import FSMContext
 from loader import dp, db, bot
 from data.config import ADMINS
 
-from keyboards.inline.inline_buttons import register_button, admin_inline_buttons
+from keyboards.inline.inline_buttons import register_button, admin_inline_buttons, make_inline_buttons, working_test_button
 
 
 # @dp.message_handler(CommandStart())
@@ -31,7 +31,9 @@ async def bot_start(message: types.Message, state: FSMContext):
 
     user = await db.select_user(telegram_id=message.from_user.id)
     if user:
-        if message.from_user.id in ADMINS:
+        print(message.from_user.id)
+        print(ADMINS)
+        if str(message.from_user.id) in ADMINS:
             await message.answer(
                 text="Siz bot adminisiz, kerakli bo'limni tanlang:",
                 reply_markup=admin_inline_buttons
@@ -39,6 +41,7 @@ async def bot_start(message: types.Message, state: FSMContext):
         else:
             await message.answer(
                 "❗️Testga javob berish\n\n✅Test kodini kiritib # (panjara) belgisini qo'yasiz va barcha kalitlarni kiritasiz.\n\n<i>✍️Misol uchun:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>\n\n✅Katta(A) va kichik(a) harflar bir xil hisoblanadi.")
+            await message.answer(text="Quyidagi tugma yordamida test ishlashingiz ham mumkin", reply_markup=working_test_button)
     else:
         await message.answer(
             text="Assalomu alaykum ustoz!\n\nTest tekshiruvchi botga xush kelibsiz!\nQuyidagi tugma yordamida botdan ro'yhatdan o'ting va botning barcha imkoniyatlaridan bepulga foydalaning.",

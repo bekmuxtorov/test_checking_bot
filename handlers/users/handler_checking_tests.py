@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from loader import dp, db
-from keyboards.inline import yesno_button
+from keyboards.inline import yesno_button, working_test_button
 from states.working_tests import CheckTest
 from utils import get_now
 
@@ -55,7 +55,7 @@ async def process_yes(call: types.CallbackQuery, state: FSMContext):
         user_answers=data.get("user_answers"),
         status_answer=status_answer
     )
-    await call.message.answer(view_test_text)
+    await call.message.answer(view_test_text, reply_markup=working_test_button)
     result = await db.add_result(
         test=data.get("test_code"),
         telegram_user=call.from_user.id,
@@ -97,10 +97,12 @@ async def view_test_with_number(test_code: int, user_answers: str, status_answer
     else:
         test = await db.select_test(id=test_code)
         user = await db.select_user(telegram_id=test.get('created_user'))
+        departmant = await db.select_departmant(id=int(test.get('dept_id')))
         true_count = sum(1 for value in status_answer.values() if value == "✅")
         persent_true_count = round(
             true_count*100/int(test.get('test_count')), 2)
         message += f"👤Tuzuvchi: {user.get('full_name')}\n"
+        message += f"📜Bo'lim: {departmant.get('name')} ta\n\n"
         message += f"📋Savollar soni: {test.get('test_count')} ta\n\n"
         message += f"📊To'g'ri javoblar soni: {true_count} ({persent_true_count}%)\n"
         message += f"🧮Noto'g'ri javoblar soni: {count-true_count} ({round(100-persent_true_count, 2)}%)\n"

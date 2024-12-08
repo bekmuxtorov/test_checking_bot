@@ -47,7 +47,18 @@ class Database:
         username varchar(255) NULL,
         telegram_id BIGINT NOT NULL UNIQUE,
         phone_number VARCHAR(20) NOT NULL,
-        created_at timestamp with time zone NOT NULL DEFAULT NOW()  
+        created_at timestamp with time zone NOT NULL DEFAULT NOW()
+        );
+        """
+        await self.execute(sql, execute=True)
+
+    async def create_table_departmants(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Departmants (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description VARCHAR(255) NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT NOW()
         );
         """
         await self.execute(sql, execute=True)
@@ -55,11 +66,13 @@ class Database:
     async def create_table_tests(self):
         sql = """
         CREATE TABLE IF NOT EXISTS Tests (
-        id SERIAL PRIMARY KEY, 
+        id SERIAL PRIMARY KEY,
+        departmant BIGINT REFERENCES Departmants(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        file_address VARCHAR(255) NULL,
         test_count INT NOT NULL,
         answers VARCHAR(255) NOT NULL,
         created_user BIGINT REFERENCES Users(telegram_id) ON DELETE CASCADE ON UPDATE CASCADE,
-        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() 
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
         """
         await self.execute(sql, execute=True)
@@ -67,12 +80,12 @@ class Database:
     async def create_table_results(self):
         sql = """
         CREATE TABLE IF NOT EXISTS Results (
-        id SERIAL PRIMARY KEY, 
+        id SERIAL PRIMARY KEY,
         test BIGINT REFERENCES Tests(id) ON DELETE CASCADE ON UPDATE CASCADE,
         telegram_user BIGINT REFERENCES Users(telegram_id) ON DELETE CASCADE ON UPDATE CASCADE,
         user_answers VARCHAR(255) NOT NULL,
         true_count INT NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW() 
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
         )
         """
         await self.execute(sql, execute=True)
@@ -103,17 +116,18 @@ class Database:
         } if user else None
 
     # tests
-    async def add_test(self, test_count, answers, created_user, created_at):
-        print(f"oldin: {created_at}")
-        sql = "INSERT INTO Tests (test_count, answers, created_user, created_at) VALUES($1, $2, $3, $4) returning *"
-        test = await self.execute(sql, test_count, answers, created_user, created_at, fetchrow=True)
+    async def add_test(self, dept_id, file_address, test_count, answers, created_user, created_at):
+        sql = "INSERT INTO Tests (departmant, file_address, test_count, answers, created_user, created_at) VALUES($1, $2, $3, $4, $5, $6) returning *"
+        test = await self.execute(sql, dept_id, file_address, test_count, answers, created_user, created_at, fetchrow=True)
         print(f"keyin: {test}")
         return {
             "id": test[0],
-            "test_count": test[1],
-            "answers": test[2],
-            "created_user": test[3],
-            "created_at": test[4]
+            "dept_id": [1],
+            "file_address": [2],
+            "test_count": test[3],
+            "answers": test[4],
+            "created_user": test[5],
+            "created_at": test[6]
         } if test else None
 
     async def select_test(self, **kwargs):
@@ -122,16 +136,74 @@ class Database:
         test = await self.execute(sql, *parameters, fetchrow=True)
         return {
             "id": test[0],
+            "dept_id": test[1],
+            "file_address": test[2],
+            "test_count": test[3],
+            "answers": test[4],
+            "created_user": test[5],
+            "created_at": test[6]
+        } if test else None
+
+    async def select_tests_from_dept(self, dept_id):
+        sql = f"SELECT * FROM Tests WHERE departmant={dept_id}"
+        tests = await self.execute(sql, fetch=True)
+        return [{
+            "id": test[0],
             "test_count": test[1],
             "answers": test[2],
             "created_user": test[3],
             "created_at": test[4]
+        } for test in tests
+        ] if tests else None
+
+    # add departmant
+    async def add_departmant(self, name, description, created_at):
+        sql = "INSERT INTO Departmants (name, description, created_at) VALUES($1, $2, $3) returning *"
+        test = await self.execute(sql, name, description, created_at, fetchrow=True)
+        return {
+            "id": test[0],
+            "name": test[1],
+            "description": test[2],
+            "created_at": test[3]
         } if test else None
+
+    async def select_departmant(self, **kwargs):
+        sql = "SELECT * FROM Departmants WHERE "
+        sql, parameters = self.format_args(sql, parameters=kwargs)
+        test = await self.execute(sql, *parameters, fetchrow=True)
+        return {
+            "id": test[0],
+            "name": test[1],
+            "description": test[2],
+            "created_at": test[3]
+        } if test else None
+
+    async def select_all_departmants(self):
+        sql = "SELECT * FROM Departmants"
+        depts = await self.execute(sql, fetch=True)
+        return [
+            {
+                "id": item[0],
+                "name": item[1],
+            } for item in depts
+        ] if depts else None
 
     # results
     async def add_result(self, test, telegram_user, user_answers, true_count, created_at):
         sql = "INSERT INTO Results (test, telegram_user, user_answers, true_count, created_at) VALUES($1, $2, $3, $4, $5) returning *"
         result = await self.execute(sql, test, telegram_user, user_answers, true_count, created_at, fetchrow=True)
+        return {
+            "id": result[0],
+            "test": result[1],
+            "user": result[2],
+            "user_answers": result[3],
+            "true_answers": result[4],
+            "created_at": result[5],
+        } if result else None
+
+    async def get_result_by_user(self, telegram_id, test_id):
+        sql = f"SELECT * FROM Results where telegram_user={telegram_id} and test={test_id} Order by created_at DESC LIMIT 1"
+        result = await self.execute(sql, fetchrow=True)
         return {
             "id": result[0],
             "test": result[1],
