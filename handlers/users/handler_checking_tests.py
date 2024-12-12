@@ -102,7 +102,7 @@ async def view_test_with_number(test_code: int, user_answers: str, status_answer
         persent_true_count = round(
             true_count*100/int(test.get('test_count')), 2)
         message += f"👤Tuzuvchi: {user.get('full_name')}\n"
-        message += f"📜Bo'lim: {departmant.get('name')} ta\n\n"
+        message += f"📜Bo'lim: {departmant.get('name')}\n\n"
         message += f"📋Savollar soni: {test.get('test_count')} ta\n\n"
         message += f"📊To'g'ri javoblar soni: {true_count} ({persent_true_count}%)\n"
         message += f"🧮Noto'g'ri javoblar soni: {count-true_count} ({round(100-persent_true_count, 2)}%)\n"

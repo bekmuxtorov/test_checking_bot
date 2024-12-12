@@ -3,7 +3,7 @@ from loader import db, dp, bot
 from aiogram.dispatcher import FSMContext
 
 from states.working_tests import AddTest, AddDepartment, WorkTest
-from keyboards.default.default_buttons import make_buttons
+from keyboards.default.default_buttons import make_buttons, cancel_button
 from keyboards.inline import make_inline_buttons, admin_inline_buttons
 from utils import get_now
 
@@ -15,7 +15,7 @@ from utils import get_now
 
 @dp.callback_query_handler(lambda c: c.data == "add_departmant")
 async def adding_departmant(call: types.CallbackQuery):
-    await call.message.answer("➕ Bo'lim nomini kiriting:")
+    await call.message.answer("➕ Bo'lim nomini kiriting:", reply_markup=cancel_button)
     await call.message.delete()
     await AddDepartment.Name.set()
 
@@ -44,7 +44,7 @@ async def process_adding_departmant(message: types.Message, state: FSMContext):
         description=description,
         created_at=await get_now()
     )
-    await message.answer("✅Muaffaqiyatli yangi bo'lim yaratildi!")
+    await message.answer("✅Muaffaqiyatli yangi bo'lim yaratildi!", reply_markup=admin_inline_buttons)
     await state.finish()
 
 
@@ -57,7 +57,7 @@ async def process_adding_departmant(message: types.Message, state: FSMContext):
 # Add test
 @dp.callback_query_handler(lambda c: c.data == 'add_test')
 async def register_callback(call: types.CallbackQuery):
-    await call.message.answer("📃Test fayl manzilini kiriting yoki o'tkazib yuboring:", reply_markup=make_buttons(["O'tkazib yuborish"], row_width=1))
+    await call.message.answer("📃Test fayl manzilini kiriting yoki o'tkazib yuboring:", reply_markup=make_buttons(["O'tkazib yuborish", "❌ Bekor qilish"], row_width=1))
     await call.message.delete()
     await AddTest.FileAddress.set()
 
@@ -67,6 +67,10 @@ async def process_test_count(message: types.Message, state: FSMContext):
     await state.update_data(file_address="")
     depts = await get_departmant()
     inline_depts_buttons = make_inline_buttons(depts, row_width=2)
+    service_message = await message.answer('.', reply_markup=types.ReplyKeyboardRemove())
+    await service_message.delete()
+    service_message_for_cancel = await message.answer('.', reply_markup=cancel_button)
+    await service_message_for_cancel.delete()
     await message.answer("📝 Test bo'limini tanglang:", reply_markup=inline_depts_buttons)
     await message.delete()
     await AddTest.Departmant.set()
@@ -83,6 +87,10 @@ async def process_test_count(message: types.Message, state: FSMContext):
     await state.update_data(file_address=file_address)
     depts = await get_departmant()
     inline_depts_buttons = make_inline_buttons(depts, row_width=2)
+    service_message = await message.answer('.', reply_markup=types.ReplyKeyboardRemove())
+    await service_message.delete()
+    service_message_for_cancel = await message.answer('.', reply_markup=cancel_button)
+    await service_message_for_cancel.delete()
     await message.answer("📝 Test bo'limini tanglang:", reply_markup=inline_depts_buttons)
     await AddTest.Departmant.set()
 
@@ -131,6 +139,8 @@ async def is_member(message: types.Message, state: FSMContext):
     inline_depts_buttons = make_inline_buttons(depts, row_width=2)
     await message.answer("⚡ Quyidagilardan test uchun bo'lim tanlang:", reply_markup=inline_depts_buttons)
     await message.delete()
+    service_message_for_cancel = await message.answer('.', reply_markup=cancel_button)
+    await service_message_for_cancel.delete()
     await AddTest.Departmant.set()
 
 
@@ -140,6 +150,8 @@ async def process_test_count(message: types.Message, state: FSMContext):
     if test_count.isnumeric():
         await state.update_data(test_count=int(test_count))
         await message.answer("📝Javoblarni ketma-ketlikda kiriting. \n\n<i>Namuna: abcababbcaabccaaabbba</i>")
+        service_message_for_cancel = await message.answer('.', reply_markup=cancel_button)
+        await service_message_for_cancel.delete()
         await AddTest.Answers.set()
     else:
         await message.answer("📋Iltimos test savollar sonini kiriting: ")
@@ -173,7 +185,7 @@ async def process_answers(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=AddTest.Count)
 async def process_answers(message: types.Message, state: FSMContext):
-    await message.answer("‼️Iltimos test javoblarini ketma-ketlikda kiriting.\n\n\n\n<i>Namuna: abcababbcaabccaaabbba</i>")
+    await message.answer("‼️Iltimos test javoblarini ketma-ketlikda kiriting.\n\n\n\n<i>Namuna: abcababbcaabccaaabbba</i>", reply_markup=cancel_button)
     await AddTest.Answers.set()
 
 
@@ -198,7 +210,7 @@ async def process_yes(call: types.CallbackQuery, state: FSMContext):
     else:
         await call.message.answer(text=caption)
 
-    await call.message.answer(text="✅Test muaffaqiyatli qo'shildi!")
+    await call.message.answer(text="✅Test muaffaqiyatli qo'shildi!", reply_markup=admin_inline_buttons)
     await state.finish()
 
 
@@ -216,6 +228,8 @@ async def process_no(call: types.CallbackQuery, state: FSMContext):
     # await call.message.delete()
     inline_depts_buttons = make_inline_buttons(depts, row_width=2)
     await call.message.answer("📜 Mos bo'limni tanlang:", reply_markup=inline_depts_buttons)
+    service_message_for_cancel = await call.message.answer('.', reply_markup=cancel_button)
+    await service_message_for_cancel.delete()
     await WorkTest.Department.set()
 
 

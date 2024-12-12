@@ -1,12 +1,13 @@
 from loader import dp, db
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.types import ReplyKeyboardRemove
 
 from data.config import ADMINS
 
 from states.registration import Registration
 from keyboards.default.default_buttons import phone_button
-from keyboards.inline.inline_buttons import admin_inline_buttons
+from keyboards.inline.inline_buttons import admin_inline_buttons, working_test_button
 
 from utils import get_now
 
@@ -53,6 +54,11 @@ async def process_phone_number(message: types.Message, state: FSMContext):
     if re.match(pattern, contact):
         await state.update_data(phone_number=contact)
         await save_user_data(message, state)
+        service_message = await message.answer(
+            text=".",
+            reply_markup=ReplyKeyboardRemove()
+        )
+        await service_message.delete()
     else:
         await message.answer("‼️Iltimos telefon raqamingizni to'liq kiriting yoki quyidagi tugma yordamida telefon raqamingizni ulashing.", reply_markup=phone_button)
         await Registration.phone_number.set()
@@ -78,7 +84,11 @@ async def save_user_data(message: types.Message, state: FSMContext):
         if message.from_user.id in ADMINS:
             await message.answer(text, reply_markup=admin_inline_buttons)
         else:
-            await message.answer(text + "\n\n❗️Testga javob berish\n\n✅Test kodini kiritib # (panjara) belgisini qo'yasiz va barcha kalitlarni kiritasiz.\n\n<i>✍️Misol uchun:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>\n\n✅Katta(A) va kichik(a) harflar bir xil hisoblanadi.")
+            await message.answer(
+                text=text +
+                "\n\n❗️Testga javob berish\n\n✅Test kodini kiritib # (panjara) belgisini qo'yasiz va barcha kalitlarni kiritasiz.\n\n<i>✍️Misol uchun:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>\n\n✅Katta(A) va kichik(a) harflar bir xil hisoblanadi.",
+                reply_markup=working_test_button
+            )
     except:
         await message.answer("‼️Ro'yxatdan o'tish muaffaqiyatli tugatilmadi! Iltimos qayta urinib ko'ring.")
 
