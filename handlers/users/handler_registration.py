@@ -84,6 +84,11 @@ async def save_user_data(message: types.Message, state: FSMContext):
         if message.from_user.id in ADMINS:
             await message.answer(text, reply_markup=admin_inline_buttons)
         else:
+            service_message = await message.answer(
+                text=".",
+                reply_markup=ReplyKeyboardRemove()
+            )
+            await service_message.delete()
             await message.answer(
                 text=text +
                 "\n\n❗️Testga javob berish\n\n✅Test kodini kiritib # (panjara) belgisini qo'yasiz va barcha kalitlarni kiritasiz.\n\n<i>✍️Misol uchun:\ntestkodi#{javoblar ketma ketlikda}\n\n1. 47#abcdabcdddabaca\n2. 47#ABCABBCCADCABAB\n3. 47#123412341234324\n3. 47#12CD12341234ab4</i>\n\n✅Katta(A) va kichik(a) harflar bir xil hisoblanadi.",

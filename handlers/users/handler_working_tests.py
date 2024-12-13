@@ -228,8 +228,6 @@ async def process_no(call: types.CallbackQuery, state: FSMContext):
     # await call.message.delete()
     inline_depts_buttons = make_inline_buttons(depts, row_width=2)
     await call.message.answer("📜 Mos bo'limni tanlang:", reply_markup=inline_depts_buttons)
-    service_message_for_cancel = await call.message.answer('.', reply_markup=cancel_button)
-    await service_message_for_cancel.delete()
     await WorkTest.Department.set()
 
 
@@ -241,8 +239,19 @@ async def is_member(call: types.CallbackQuery, state: FSMContext):
     get_dept = await db.select_departmant(id=dept_id)
     dept_name = get_dept.get("name")
     tests_from_base = await db.select_tests_from_dept(dept_id=dept_id)
+    depts = await get_departmant()
+    # await call.message.delete()
+    inline_depts_buttons = make_inline_buttons(depts, row_width=2)
 
     tests = dict()
+    if not tests_from_base:
+        await call.message.answer(
+            text="Ushbu bo'limga testlar joylanmagan, boshqa bo'limni tanlashingiz mumkin",
+            reply_markup=inline_depts_buttons
+        )
+        await WorkTest.Department.set()
+        return
+
     for test in tests_from_base:
         status = await db.get_result_by_user(telegram_id=call.message.chat.id, test_id=int(test.get("id")))
         if status:
